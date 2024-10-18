@@ -48,7 +48,7 @@ export const FinancialRecordsProvider = ({
   }, [user]);
 
   const addRecord = async (record: FinancialRecord) => {
-    const response = await fetch("https://personalfinancetracker-server-1.onrender.com1/financial-records", {
+    const response = await fetch("https://personalfinancetracker-server-1.onrender.com/financial-records", {
       method: "POST",
       body: JSON.stringify(record),
       headers: {
