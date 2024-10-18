@@ -1,23 +1,36 @@
+// App.tsx
+
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+} from "react-router-dom";
+import { useEffect, ReactNode } from "react";
 import { Dashboard } from "./pages/dashboard";
 import { Auth } from "./pages/auth";
 import { FinancialRecordsProvider } from "./contexts/financial-record-context";
-import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import { SignedIn, UserButton } from "@clerk/clerk-react";
 
-function RequireAuth({ children }) {
+// Adding types for props in RequireAuth
+interface RequireAuthProps {
+  children: ReactNode;
+}
+
+function RequireAuth({ children }: RequireAuthProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
     // Check if the user is signed in
-    const isSignedIn = localStorage.getItem('signed') == 'true';
+    const isSignedIn = localStorage.getItem("signed") === "true"; // Use strict equality
     if (!isSignedIn) {
       navigate("/auth");
     }
   }, [navigate]);
 
-  return children;
+  return <>{children}</>;
 }
 
 function App() {
