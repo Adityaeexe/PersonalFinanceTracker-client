@@ -28,93 +28,99 @@ export const FinancialRecordsProvider = ({
   children: React.ReactNode;
 }) => {
   const [records, setRecords] = useState<FinancialRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const { user } = useUser();
 
   const fetchRecords = async () => {
-    if (!user) return;
-    const response = await fetch(
-      `https://personalfinancetracker-server-1.onrender.com/financial-records/getAllByUserID/${user.id}`
-    );
+    try {
+      if (user && user.id) {
+        const response = await fetch(
+          `https://personalfinancetracker-server-1.onrender.com/financial-records/getAllByUserID/${user.id}`
+        );
 
-    if (response.ok) {
-      const records = await response.json();
-      console.log(records);
-      setRecords(records);
+        if (response.ok) {
+          const data = await response.json();
+          setRecords(data);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch records:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRecords();
-  }, [user]);
+    if (user && user.id && loading) {
+      fetchRecords();
+    }
+  }, [user, user?.id, loading]);
 
   const addRecord = async (record: FinancialRecord) => {
-    const response = await fetch("https://personalfinancetracker-server-1.onrender.com/financial-records", {
-      method: "POST",
-      body: JSON.stringify(record),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
     try {
+      const response = await fetch("https://personalfinancetracker-server-1.onrender.com/financial-records", {
+        method: "POST",
+        body: JSON.stringify(record),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
       if (response.ok) {
         const newRecord = await response.json();
         setRecords((prev) => [...prev, newRecord]);
       }
-    } catch (err) {}
+    } catch (error) {
+      console.error("Failed to add record:", error);
+    }
   };
 
   const updateRecord = async (id: string, newRecord: FinancialRecord) => {
-    const response = await fetch(
-      `https://personalfinancetracker-server-1.onrender.com/financial-records/${id}`,
-      {
-        method: "PUT",
-        body: JSON.stringify(newRecord),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
     try {
+      const response = await fetch(
+        `https://personalfinancetracker-server-1.onrender.com/financial-records/${id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(newRecord),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       if (response.ok) {
-        const newRecord = await response.json();
+        const updatedRecord = await response.json();
         setRecords((prev) =>
-          prev.map((record) => {
-            if (record._id === id) {
-              return newRecord;
-            } else {
-              return record;
-            }
-          })
+          prev.map((record) => (record._id === id ? updatedRecord : record))
         );
       }
-    } catch (err) {}
+    } catch (error) {
+      console.error("Failed to update record:", error);
+    }
   };
 
   const deleteRecord = async (id: string) => {
-    const response = await fetch(
-      `https://personalfinancetracker-server-1.onrender.com/financial-records/${id}`,
-      {
-        method: "DELETE",
-      }
-    );
-
     try {
+      const response = await fetch(
+        `https://personalfinancetracker-server-1.onrender.com/financial-records/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
       if (response.ok) {
-        const deletedRecord = await response.json();
-        setRecords((prev) =>
-          prev.filter((record) => record._id !== deletedRecord._id)
-        );
+        setRecords((prev) => prev.filter((record) => record._id !== id));
       }
-    } catch (err) {}
+    } catch (error) {
+      console.error("Failed to delete record:", error);
+    }
   };
 
   return (
     <FinancialRecordsContext.Provider
       value={{ records, addRecord, updateRecord, deleteRecord }}
     >
-      {children}
+      {!loading && children}
     </FinancialRecordsContext.Provider>
   );
 };
