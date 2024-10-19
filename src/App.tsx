@@ -26,7 +26,7 @@ function RequireAuth({ children }: RequireAuthProps) {
     // Check if the user is signed in
     const isSignedIn = localStorage.getItem("signed") === "true"; // Use strict equality
     if (!isSignedIn) {
-      navigate("/auth");
+      navigate("/dashboard");
     }
   }, [navigate]);
 
@@ -38,14 +38,14 @@ function App() {
     <Router>
       <div className="app-container">
         <div className="navbar">
-          <Link to="/">Dashboard</Link>
+          <Link to="/dashboard">Dashboard</Link>
           <SignedIn>
             <UserButton />
           </SignedIn>
         </div>
         <Routes>
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <RequireAuth>
                 <FinancialRecordsProvider>
@@ -54,7 +54,7 @@ function App() {
               </RequireAuth>
             }
           />
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/" element={<Auth />} />
         </Routes>
       </div>
     </Router>
